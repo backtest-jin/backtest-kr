@@ -404,7 +404,7 @@
 <!-- 히어로 -->
 <div class="hero">
   <div class="hero-badge">🔥 현재 베타 대기자 모집 중</div>
-  <h1>이 전략, 진짜<br><em>돈 벌었는지 10초 안에</em></h1>
+  <h1>이 전략, 진짜 돈 벌었는지<br><em>10초 안에 확인하세요</em></h1>
   <p>손실 나는 전략, 실행 전에 걸러내세요. EMA, ORB, RSI 전략을 코드 없이 설정하고 승률·수익률·MDD를 즉시 확인.</p>
   <div class="hero-btns">
     <a href="#cta" class="btn-primary">얼리액세스 신청하기</a>
@@ -547,12 +547,12 @@
       <div class="section-label" style="margin-bottom:20px">베타 대기자 신청</div>
       <h2>베타 100명만<br>먼저 오픈합니다</h2>
       <p>선착순 테스트 참여 · 지금 신청 안 하면 늦습니다. Pro 플랜 1개월 무료 혜택 포함.</p>
-      <form class="email-form" onsubmit="handleSubmit(event)" style="flex-direction:column; align-items:center;">
+      <form class="email-form" action="https://formspree.io/f/xlgoynaz" method="POST" style="flex-direction:column; align-items:center;">
         <div style="display:flex; gap:12px; width:100%; max-width:480px; flex-wrap:wrap; justify-content:center;">
-          <input type="email" class="email-input" placeholder="이메일 주소 입력" required id="emailInput">
+          <input type="email" name="email" class="email-input" placeholder="이메일 주소 입력" required id="emailInput">
           <button type="submit" class="email-submit">베타 신청하기</button>
         </div>
-        <select id="exchangeInput" style="margin-top:12px; width:100%; max-width:480px; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:14px 20px; color:var(--text2); font-size:15px; font-family:'Noto Sans KR',sans-serif; outline:none;">
+        <select name="exchange" style="margin-top:12px; width:100%; max-width:480px; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:14px 20px; color:var(--text2); font-size:15px; font-family:'Noto Sans KR',sans-serif; outline:none;">
           <option value="" disabled selected>주로 쓰는 거래소/코인은? (선택)</option>
           <option value="binance_btc">바이낸스 · BTC</option>
           <option value="binance_eth">바이낸스 · ETH</option>
