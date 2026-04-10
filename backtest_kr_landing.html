@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtest.kr — 코인 전략 백테스트 플랫폼</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #16161f;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5a0;
+    --accent2: #0066ff;
+    --text: #f0f0f5;
+    --text2: #888899;
+    --text3: #555566;
+    --card: rgba(255,255,255,0.04);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── 배경 그리드 ── */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* ── 네비 ── */
+  nav {
+    position:fixed; top:0; left:0; right:0;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 20px 48px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    z-index:100;
+  }
+  .logo {
+    font-family:'Syne',sans-serif;
+    font-weight:800; font-size:22px;
+    color:var(--text);
+    letter-spacing:-0.5px;
+  }
+  .logo span { color:var(--accent); }
+  nav ul { list-style:none; display:flex; gap:32px; }
+  nav ul a {
+    color:var(--text2); text-decoration:none;
+    font-size:14px; font-weight:500;
+    transition:color .2s;
+  }
+  nav ul a:hover { color:var(--text); }
+  .nav-cta {
+    background:var(--accent); color:#0a0a0f;
+    padding:10px 22px; border-radius:8px;
+    font-size:14px; font-weight:700;
+    text-decoration:none; transition:opacity .2s;
+    font-family:'Syne',sans-serif;
+  }
+  .nav-cta:hover { opacity:0.85; }
+
+  /* ── 히어로 ── */
+  .hero {
+    position:relative; z-index:1;
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center;
+    padding: 120px 24px 80px;
+  }
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(0,229,160,0.08);
+    border:1px solid rgba(0,229,160,0.2);
+    border-radius:100px;
+    padding:6px 16px;
+    font-size:13px; color:var(--accent);
+    font-weight:500; margin-bottom:32px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-badge::before {
+    content:'';
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--accent);
+    animation:pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100%{opacity:1;transform:scale(1)}
+    50%{opacity:0.5;transform:scale(1.4)}
+  }
+  .hero h1 {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(42px,7vw,88px);
+    font-weight:800;
+    line-height:1.05;
+    letter-spacing:-2px;
+    margin-bottom:24px;
+    animation: fadeUp 0.7s ease 0.1s both;
+  }
+  .hero h1 em {
+    font-style:normal;
+    color:transparent;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip:text; background-clip:text;
+  }
+  .hero p {
+    font-size:clamp(17px,2.5vw,21px);
+    color:var(--text2); max-width:560px;
+    margin-bottom:48px; font-weight:300;
+    animation: fadeUp 0.7s ease 0.2s both;
+  }
+  .hero-btns {
+    display:flex; gap:16px; flex-wrap:wrap;
+    justify-content:center;
+    animation: fadeUp 0.7s ease 0.3s both;
+  }
+  .btn-primary {
+    background:var(--accent); color:#0a0a0f;
+    padding:16px 36px; border-radius:10px;
+    font-size:16px; font-weight:700;
+    text-decoration:none; transition:all .2s;
+    font-family:'Syne',sans-serif;
+  }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(0,229,160,0.3); }
+  .btn-secondary {
+    background:transparent; color:var(--text);
+    padding:16px 36px; border-radius:10px;
+    font-size:16px; font-weight:500;
+    text-decoration:none;
+    border:1px solid var(--border);
+    transition:all .2s;
+  }
+  .btn-secondary:hover { border-color:rgba(255,255,255,0.2); background:var(--card); }
+
+  /* 히어로 대시보드 미리보기 */
+  .hero-preview {
+    position:relative; z-index:1;
+    margin-top:80px; width:100%; max-width:900px;
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+  .preview-window {
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .preview-bar {
+    background:var(--bg3);
+    padding:14px 20px;
+    display:flex; align-items:center; gap:8px;
+    border-bottom:1px solid var(--border);
+  }
+  .preview-dot { width:12px; height:12px; border-radius:50%; }
+  .preview-bar span { font-size:13px; color:var(--text3); margin-left:8px; }
+  .preview-body { padding:28px; }
+  .preview-stats {
+    display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
+    margin-bottom:24px;
+  }
+  .stat-card {
+    background:var(--bg3); border-radius:10px;
+    padding:16px; border:1px solid var(--border);
+  }
+  .stat-label { font-size:11px; color:var(--text3); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+  .stat-value { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; }
+  .stat-value.green { color:var(--accent); }
+  .stat-value.red { color:#ff4466; }
+  .stat-value.blue { color:#4499ff; }
+  .preview-chart {
+    background:var(--bg3); border-radius:10px;
+    padding:20px; border:1px solid var(--border);
+    height:140px; position:relative; overflow:hidden;
+  }
+  .preview-chart svg { width:100%; height:100%; }
+
+  /* ── 섹션 공통 ── */
+  section { position:relative; z-index:1; }
+  .section-inner { max-width:1100px; margin:0 auto; padding:100px 24px; }
+  .section-label {
+    font-size:12px; font-weight:700; letter-spacing:2px;
+    color:var(--accent); text-transform:uppercase;
+    margin-bottom:16px;
+  }
+  .section-title {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(32px,5vw,52px);
+    font-weight:800; letter-spacing:-1px;
+    line-height:1.1; margin-bottom:20px;
+  }
+  .section-desc { font-size:18px; color:var(--text2); max-width:560px; font-weight:300; }
+
+  /* ── 기능 섹션 ── */
+  .features-grid {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:20px; margin-top:60px;
+  }
+  .feature-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px; padding:32px;
+    transition:all .3s;
+    position:relative; overflow:hidden;
+  }
+  .feature-card::before {
+    content:''; position:absolute;
+    top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity:0; transition:opacity .3s;
+  }
+  .feature-card:hover { border-color:rgba(0,229,160,0.2); transform:translateY(-4px); }
+  .feature-card:hover::before { opacity:1; }
+  .feature-icon {
+    width:48px; height:48px; border-radius:12px;
+    background:rgba(0,229,160,0.1);
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; margin-bottom:20px;
+  }
+  .feature-card h3 {
+    font-family:'Syne',sans-serif;
+    font-size:18px; font-weight:700;
+    margin-bottom:10px;
+  }
+  .feature-card p { font-size:14px; color:var(--text2); line-height:1.7; }
+
+  /* ── 플랜 섹션 ── */
+  .plans-grid {
+    display:grid; grid-template-columns:repeat(2,1fr);
+    gap:24px; margin-top:60px; max-width:700px;
+  }
+  .plan-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px; padding:36px;
+    transition:all .3s;
+  }
+  .plan-card.featured {
+    border-color:rgba(0,229,160,0.3);
+    background:rgba(0,229,160,0.05);
+    position:relative;
+  }
+  .plan-badge {
+    position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+    background:var(--accent); color:#0a0a0f;
+    font-size:11px; font-weight:700;
+    padding:4px 14px; border-radius:100px;
+    font-family:'Syne',sans-serif; letter-spacing:0.5px;
+  }
+  .plan-name {
+    font-family:'Syne',sans-serif;
+    font-size:14px; font-weight:700;
+    text-transform:uppercase; letter-spacing:1px;
+    color:var(--text2); margin-bottom:12px;
+  }
+  .plan-price {
+    font-family:'Syne',sans-serif;
+    font-size:42px; font-weight:800;
+    letter-spacing:-1px; margin-bottom:6px;
+  }
+  .plan-price span { font-size:16px; font-weight:400; color:var(--text2); }
+  .plan-desc { font-size:13px; color:var(--text3); margin-bottom:28px; }
+  .plan-features { list-style:none; }
+  .plan-features li {
+    font-size:14px; color:var(--text2);
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; gap:10px;
+  }
+  .plan-features li:last-child { border-bottom:none; }
+  .plan-features li::before { content:'✓'; color:var(--accent); font-weight:700; flex-shrink:0; }
+  .plan-cta {
+    display:block; text-align:center;
+    margin-top:28px; padding:14px;
+    border-radius:10px; font-weight:700;
+    text-decoration:none; font-size:15px;
+    transition:all .2s; font-family:'Syne',sans-serif;
+  }
+  .plan-card:not(.featured) .plan-cta {
+    border:1px solid var(--border); color:var(--text);
+  }
+  .plan-card:not(.featured) .plan-cta:hover { border-color:rgba(255,255,255,0.2); }
+  .plan-card.featured .plan-cta {
+    background:var(--accent); color:#0a0a0f;
+  }
+  .plan-card.featured .plan-cta:hover { opacity:0.85; }
+
+  /* ── 이메일 수집 ── */
+  .cta-section {
+    text-align:center;
+  }
+  .cta-box {
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:24px; padding:80px 48px;
+    position:relative; overflow:hidden;
+  }
+  .cta-box::before {
+    content:''; position:absolute;
+    top:-100px; left:50%; transform:translateX(-50%);
+    width:400px; height:400px;
+    background:radial-gradient(circle, rgba(0,229,160,0.08), transparent 70%);
+    pointer-events:none;
+  }
+  .cta-box h2 {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(28px,4vw,48px);
+    font-weight:800; letter-spacing:-1px;
+    margin-bottom:16px;
+  }
+  .cta-box p { font-size:18px; color:var(--text2); margin-bottom:40px; font-weight:300; }
+  .email-form {
+    display:flex; gap:12px; max-width:480px;
+    margin:0 auto; flex-wrap:wrap; justify-content:center;
+  }
+  .email-input {
+    flex:1; min-width:240px;
+    background:var(--bg3);
+    border:1px solid var(--border);
+    border-radius:10px; padding:14px 20px;
+    color:var(--text); font-size:15px;
+    font-family:'Noto Sans KR',sans-serif;
+    outline:none; transition:border .2s;
+  }
+  .email-input::placeholder { color:var(--text3); }
+  .email-input:focus { border-color:rgba(0,229,160,0.4); }
+  .email-submit {
+    background:var(--accent); color:#0a0a0f;
+    padding:14px 28px; border-radius:10px;
+    font-size:15px; font-weight:700;
+    border:none; cursor:pointer;
+    font-family:'Syne',sans-serif;
+    transition:all .2s; white-space:nowrap;
+  }
+  .email-submit:hover { opacity:0.85; transform:translateY(-1px); }
+  .email-note { font-size:13px; color:var(--text3); margin-top:14px; }
+
+  /* ── 푸터 ── */
+  footer {
+    position:relative; z-index:1;
+    border-top:1px solid var(--border);
+    padding:40px 48px;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:16px;
+  }
+  .footer-logo {
+    font-family:'Syne',sans-serif;
+    font-weight:800; font-size:18px;
+  }
+  .footer-logo span { color:var(--accent); }
+  .footer-links { display:flex; gap:24px; }
+  .footer-links a {
+    font-size:13px; color:var(--text3);
+    text-decoration:none; transition:color .2s;
+  }
+  .footer-links a:hover { color:var(--text2); }
+  .footer-copy { font-size:13px; color:var(--text3); }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  @media (max-width:768px) {
+    nav { padding:16px 20px; }
+    nav ul { display:none; }
+    .features-grid { grid-template-columns:1fr; }
+    .plans-grid { grid-template-columns:1fr; }
+    .preview-stats { grid-template-columns:repeat(2,1fr); }
+    footer { flex-direction:column; text-align:center; padding:32px 20px; }
+    .footer-links { justify-content:center; }
+    .cta-box { padding:48px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 네비 -->
+<nav>
+  <div class="logo">Backtest<span>.kr</span></div>
+  <ul>
+    <li><a href="#features">기능</a></li>
+    <li><a href="#pricing">요금제</a></li>
+    <li><a href="#cta">얼리액세스</a></li>
+  </ul>
+  <a href="#cta" class="nav-cta">무료로 시작하기</a>
+</nav>
+
+<!-- 히어로 -->
+<div class="hero">
+  <div class="hero-badge">코인 전략 백테스트 플랫폼</div>
+  <h1>코딩 없이<br><em>전략을 검증하세요</em></h1>
+  <p>바이낸스 데이터 기반으로 내 코인 전략의 승률, 수익률, MDD를 즉시 확인하세요. 코드 한 줄 없이.</p>
+  <div class="hero-btns">
+    <a href="#cta" class="btn-primary">무료로 시작하기</a>
+    <a href="#features" class="btn-secondary">기능 살펴보기</a>
+  </div>
+
+  <div class="hero-preview">
+    <div class="preview-window">
+      <div class="preview-bar">
+        <div class="preview-dot" style="background:#ff5f57"></div>
+        <div class="preview-dot" style="background:#febc2e"></div>
+        <div class="preview-dot" style="background:#28c840"></div>
+        <span>backtest.kr — BTC/USDT ORB 전략 분석</span>
+      </div>
+      <div class="preview-body">
+        <div class="preview-stats">
+          <div class="stat-card">
+            <div class="stat-label">누적 수익률</div>
+            <div class="stat-value green">+35.2%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">승률</div>
+            <div class="stat-value blue">51.6%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">MDD</div>
+            <div class="stat-value red">-9.8%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">총 거래 횟수</div>
+            <div class="stat-value">322회</div>
+          </div>
+        </div>
+        <div class="preview-chart">
+          <svg viewBox="0 0 860 120" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00e5a0" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#00e5a0" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,90 C40,88 80,85 120,80 C160,75 200,78 240,70 C280,62 320,65 360,55 C400,45 440,50 480,40 C520,30 560,35 600,25 C640,15 680,20 720,12 C760,5 800,8 860,3 L860,120 L0,120 Z"
+              fill="url(#chartGrad)"/>
+            <path d="M0,90 C40,88 80,85 120,80 C160,75 200,78 240,70 C280,62 320,65 360,55 C400,45 440,50 480,40 C520,30 560,35 600,25 C640,15 680,20 720,12 C760,5 800,8 860,3"
+              fill="none" stroke="#00e5a0" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 기능 -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">핵심 기능</div>
+    <h2 class="section-title">전략 검증에 필요한<br>모든 것</h2>
+    <p class="section-desc">복잡한 설정 없이 전략 조건만 입력하면 바이낸스 실제 데이터로 즉시 분석합니다.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>성과 대시보드</h3>
+        <p>누적 수익률, 승률, MDD, 손익비를 한눈에. 기간별 필터와 월별 성과 분석까지 제공합니다.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>빠른 백테스트</h3>
+        <p>ORB, EMA, RSI 등 주요 전략을 클릭 몇 번으로 설정하고 수년치 데이터로 즉시 검증하세요.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>전략 비교</h3>
+        <p>여러 전략의 성과를 동시에 비교하여 최적의 파라미터와 조건을 찾아낼 수 있습니다.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>실제 바이낸스 데이터</h3>
+        <p>바이낸스 공식 API 기반의 실제 캔들 데이터로 신뢰도 높은 백테스트 결과를 제공합니다.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💾</div>
+        <h3>결과 저장 & 내보내기</h3>
+        <p>백테스트 결과를 저장하고 CSV로 내보내어 나만의 전략 데이터베이스를 만드세요.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>투자 판단은 내가</h3>
+        <p>추천이나 신호 없이 오직 데이터만 제공합니다. 모든 판단은 사용자 본인이 합니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 요금제 -->
+<section id="pricing">
+  <div class="section-inner">
+    <div class="section-label">요금제</div>
+    <h2 class="section-title">합리적인 가격으로<br>시작하세요</h2>
+    <p class="section-desc">무료로 시작하고 필요할 때 업그레이드 하세요.</p>
+
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">무료 <span>/ 영구</span></div>
+        <div class="plan-desc">기본 기능으로 시작해보세요</div>
+        <ul class="plan-features">
+          <li>일 3회 백테스트</li>
+          <li>최근 6개월 데이터</li>
+          <li>기본 성과 지표</li>
+          <li>BTC, ETH, BNB</li>
+        </ul>
+        <a href="#cta" class="plan-cta">무료로 시작</a>
+      </div>
+
+      <div class="plan-card featured">
+        <div class="plan-badge">POPULAR</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">9,900 <span>원 / 월</span></div>
+        <div class="plan-desc">진지한 트레이더를 위한 플랜</div>
+        <ul class="plan-features">
+          <li>무제한 백테스트</li>
+          <li>최대 3년 데이터</li>
+          <li>고급 지표 전체</li>
+          <li>30개+ 코인 지원</li>
+          <li>CSV 내보내기</li>
+          <li>결과 무제한 저장</li>
+        </ul>
+        <a href="#cta" class="plan-cta">Pro 시작하기</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 얼리액세스 이메일 수집 -->
+<section id="cta">
+  <div class="section-inner cta-section">
+    <div class="cta-box">
+      <div class="section-label" style="margin-bottom:20px">얼리액세스</div>
+      <h2>지금 신청하고<br>첫 달 무료로 사용하세요</h2>
+      <p>출시 알림을 받고 Pro 플랜 1개월 무료 혜택을 받으세요.</p>
+      <form class="email-form" onsubmit="handleSubmit(event)">
+        <input type="email" class="email-input" placeholder="이메일 주소 입력" required id="emailInput">
+        <button type="submit" class="email-submit">신청하기</button>
+      </form>
+      <p class="email-note" id="formNote">스팸 없음 · 언제든 취소 가능 · 출시 시 알림 1회만 발송</p>
+    </div>
+  </div>
+</section>
+
+<!-- 푸터 -->
+<footer>
+  <div class="footer-logo">Backtest<span>.kr</span></div>
+  <div class="footer-links">
+    <a href="#">이용약관</a>
+    <a href="#">개인정보처리방침</a>
+    <a href="mailto:hello@backtest.kr">hello@backtest.kr</a>
+  </div>
+  <div class="footer-copy">© 2026 Backtest.kr · 본 서비스는 투자 도구이며 투자 조언이 아닙니다</div>
+</footer>
+
+<script>
+function handleSubmit(e) {
+  e.preventDefault();
+  const email = document.getElementById('emailInput').value;
+  const note = document.getElementById('formNote');
+  note.style.color = '#00e5a0';
+  note.textContent = '✓ 신청 완료! 출시 시 이메일로 알려드릴게요 🎉';
+  document.getElementById('emailInput').value = '';
+}
+</script>
+</body>
+</html>
